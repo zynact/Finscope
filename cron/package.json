@@ -5,12 +5,10 @@
   "description": "Daily keep-alive ping script for Finscope Supabase database",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test-ping": "node index.js --once"
+    "start": "node index.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.3",
-    "dotenv": "^16.4.7",
-    "node-cron": "^3.0.3"
+    "dotenv": "^16.4.7"
   }
 }

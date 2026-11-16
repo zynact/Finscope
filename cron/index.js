@@ -1,16 +1,10 @@
 import dotenv from 'dotenv';
-import cron from 'node-cron';
 import { createClient } from '@supabase/supabase-js';
 
-// Load .env relative to this file so it works from any directory
 dotenv.config({ path: new URL('./.env', import.meta.url) });
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
-
-// Convert hours from .env to cron syntax (e.g., 24 -> '0 0 * * *', 12 -> '0 */12 * * *')
-const INTERVAL_HOURS = parseInt(process.env.INTERVAL_HOURS || '24', 10);
-const cronSchedule = process.env.CRON_SCHEDULE || (INTERVAL_HOURS >= 24 ? '0 0 * * *' : `0 */${INTERVAL_HOURS} * * *`);
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -29,7 +23,7 @@ async function performPing() {
 
     if (readError) {
       console.error(`[${timestamp}] Read failed:`, readError.message);
-      return false;
+      process.exit(1);
     }
 
     const nextCount = (current?.ping_count || 0) + 1;
@@ -45,7 +39,7 @@ async function performPing() {
 
     if (writeError) {
       console.error(`[${timestamp}] Write failed:`, writeError.message);
-      return false;
+      process.exit(1);
     }
 
     // 3. Confirm write
@@ -57,23 +51,14 @@ async function performPing() {
 
     if (verifyError) {
       console.error(`[${timestamp}] Verification failed:`, verifyError.message);
-      return false;
+      process.exit(1);
     }
 
     console.log(`[${verified.last_pinged_at}] Ping successful (count: ${verified.ping_count})`);
-    return true;
   } catch (err) {
     console.error(`[${timestamp}] Unexpected error:`, err.message || err);
-    return false;
+    process.exit(1);
   }
 }
 
-if (process.argv.includes('--once') || process.argv.includes('--test')) {
-  performPing().then((success) => {
-    process.exitCode = success ? 0 : 1;
-  });
-} else {
-  performPing();
-  cron.schedule(cronSchedule, performPing);
-  console.log(`Keep-alive cron active [Every ${INTERVAL_HOURS}h | Schedule: "${cronSchedule}"]`);
-}
+performPing();
