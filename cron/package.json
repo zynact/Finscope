@@ -1,0 +1,13 @@
+{
+  "name": "finscope-cron",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Keep-alive ping script for Finscope Supabase database",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.3"
+  }
+}
